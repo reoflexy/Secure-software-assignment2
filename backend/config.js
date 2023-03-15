@@ -1,7 +1,7 @@
 var config = {
 	development: {
 			  user: 'postgres', // env var: PGUSER
-			  database: 'hotelsite', // env var: PGDATABASE
+			  database: 'blogdb', // env var: PGDATABASE
 			  password: 'Qw12aszx', // env var: PGPASSWORD
 			  host: 'localhost', // Server hosting the postgres database
 			  port: 5432, // env var: PGPORT
