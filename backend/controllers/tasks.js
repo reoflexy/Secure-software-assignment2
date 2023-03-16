@@ -1,7 +1,12 @@
 
 const {pool,config} = require('../db')
 
-const register = async (username,password) => {
+const register = async (req,res) => {
+    //check user detail are present
+    if(!req.body.username || !req.body.email|| !req.body.password){
+    return res.status(500).send('Invalid login credentials');
+    }
+
     const client = await pool.connect();
 
 
@@ -11,7 +16,7 @@ const login = async (username,password) => {
 
 }
 
-const getPosts = async (req,res) => {
+const getPosts = async () => {
 const client = await pool.connect();
 const q = `set search_path = hotelbooking,public; SELECT * FROM users;`;
 
