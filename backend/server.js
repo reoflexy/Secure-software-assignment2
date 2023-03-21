@@ -1,7 +1,7 @@
 const express = require("express")
+require('dotenv').config();
 const tasks = require('./routes/tasks')
 const app = express();
-require('dotenv').config();
 
 const port = process.env.PORT || 5000;
 app.use(express.json());
