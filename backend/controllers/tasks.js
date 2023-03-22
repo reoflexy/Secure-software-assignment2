@@ -3,9 +3,9 @@ const jwt = require('jsonwebtoken')
 const {pool,config} = require('../db')
 
 const register = async (req,res) => {
-    const {username,password,email} = req.body;
+    let {username,password} = req.body;
     //check user detail are present
-    if(!username || !email|| !password){
+    if(!username || !password){
     return res.status(500).send('Invalid login credentials');
     }
 
@@ -21,10 +21,9 @@ const register = async (req,res) => {
 
     //insert user 
     await client.query(regQuery).then((result)=> {
-    
     //create token
-    const token = jwt.sign({user: username,email: email},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
-    return res.status(200).send({token: token,message: 'Registration successful', });
+    const token = jwt.sign({username: username,userId: userId},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
+    return res.status(200).send({token: token,message: 'Registration successful',DBResult: result });
     })
     .catch((err)=> {
         return res.status(500).send(err);
@@ -42,7 +41,7 @@ if(!username || !password){
 
 //fetch credentials from database
 const client = await pool.connect();
-const q = `set search_path = hotelbooking,public; SELECT * FROM users WHERE username = '${username}'  ;`;
+const q = `set search_path = public; SELECT * FROM users WHERE username = '${username}'  ;`;
 
 await client.query(q).then(async(result)=>{
 client.release();
@@ -63,8 +62,8 @@ if (!isMatch){
 }
 
 //create token and send response
-const token = jwt.sign({user: username,email: email},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
-return res.status(200).json({token: token,message: 'Registration successful' }); 
+const token = jwt.sign({user: username,userId: data.id},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
+return res.status(200).json({token: token,message: 'Login successful' });
 
 })
 .catch((err) => {
@@ -75,11 +74,36 @@ return res.status(500).json(err)
 
 }
 
+const addPost = async (req,res) => {
+    const {message,username} = req.body
+
+    //validate inputs
+    if(!message || username){
+        console.log('Invalid input')
+        return res.status(400).json({message: 'Invalid input'})
+    }
+    //create connection client
+    const client = await pool.connect();
+    //generate Id for post
+    const postId = Math.floor(Math.random(3199199-0102111)+0102111);
+    //create query string
+    const q = `set search_path = hotelbooking,public; insert into posts values('${postId},'${username}','${message}',now()) ;`
+    //perform asynchronous database insertation
+    await client.query(q).then((result)=> {
+    console.log('Post successful')
+    return res.status(200).json({response: result, message: 'Post successful'});
+    }).catch((err)=>{
+        console.log('Post failed ',err)
+        return res.status(500).json({message: 'Post failed'})
+    })
+    
+ }
+
 
 
 const getPosts = async () => {
 const client = await pool.connect();
-const q = `set search_path = hotelbooking,public; SELECT * FROM users;`;
+const q = `set search_path = hotelbooking,public; SELECT * FROM posts;`;
 
 await client.query(q).then((result)=>{
 client.release();
@@ -94,11 +118,7 @@ console.log(err);
 
 }
 
-const addPost = async (message,username,image) => {
-    const client = await pool.connect();
-    const q = `set search_path = hotelbooking,public;   ;`
-    
-    }
+
 
 module.exports = 
 {
