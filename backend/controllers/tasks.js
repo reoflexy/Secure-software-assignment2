@@ -134,7 +134,7 @@ const addPost = async (req,res) => {
     console.log('Post successful')
     return res.status(200).json({response: result, message: 'Post successful'});
     }).catch((err)=>{
-        console.log('Post failed ',err)
+        console.log('Post failed to upload',err)
         return res.status(500).json({message: 'Post failed'})
     })
     
