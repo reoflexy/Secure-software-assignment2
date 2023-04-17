@@ -14,3 +14,9 @@ body varchar(255) NOT NULL,
 created TIMESTAMP NOT NULL
 );
 
+CREATE TABLE otp(
+id int PRIMARY KEY NOT NULL,
+username varchar(255) NOT NULL,
+otp varchar(255) NOT NULL,
+created TIMESTAMP NOT NULL
+);

@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const {pool,config} = require('../db')
+const nodemailer = require('nodemailer')
 
 const register = async (req,res) => {
     let {username,password} = req.body;
@@ -61,9 +62,49 @@ if (!isMatch){
     return res.status(500).send('Invalid login credentials')
 }
 
-//create token and send response
-const token = jwt.sign({user: username,userId: data.id},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
-return res.status(200).json({token: token,message: 'Login successful' });
+//create otp data
+const otpnum = Math.floor(Math.random(9991-1911)+1911);
+const otpId = Math.floor(Math.random(99991-11911)+11911);
+
+//save otp to db
+const q2 = `set search_path = public; INSERT INTO otp VALUES ('${otpId}','${data.username}','${otpnum}',now() ) ;`;
+await client.query(q2).then((result)=>{
+console.log('otp saved')
+})
+.catch((err) => {
+    console.log(err);
+    return res.status(500).json(err)
+})
+
+//send email otp
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'richmondeyesan04@gmail.com',
+        pass: 'qw12aszx17091996'
+    }
+    });
+
+
+const mailOptions = {
+from: 'My Blog',
+to: `${data.email}`,
+subject: 'Verify Your Identity',
+text: 'Hi '+data.username+' , enter the code: '+otpnum+' to verify your account'
+}
+
+await transporter.sendMail(mailOptions, function(error,info){
+    if(error){
+        console.log(error);
+        return res.status(500).json(error)
+    }
+    else{
+        console.log('Email sent')
+        return res.status(200).json({message: 'success' });
+    }
+})
+
+
 
 })
 .catch((err) => {
@@ -99,6 +140,43 @@ const addPost = async (req,res) => {
     
  }
 
+const verifyOtp = async (req,res) => {
+const {otp,user} = req.body
+
+const client = await pool.connect();
+const q = `set search_path = public; SELECT * FROM otp WHERE username = '${user.username}'  ;`;
+
+
+//check if otp exists
+await client.query(q).then(async(result)=>{
+client.release();
+let data = result[1].rows
+console.log(data)
+//check if rows are empty
+if (data.length < 1){
+    console.log('Invalid otp')
+    return res.status(500).send('Invalid OTP')
+}
+data = data[0]
+
+//compare otp values
+if(otp == data.otp){
+//create token and send response
+const token = jwt.sign({user: user},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
+return res.status(200).json({token: token,message: 'success' });
+}
+else {
+    console.log('Invalid OTP')
+    return res.status(500).json({message: 'Invalid otp' });
+}
+})
+.catch((err) => {
+console.log(err)
+return res.status(500).json({message: 'Verification Failed',error: err});
+})
+
+ }
+
 
 
 const getPosts = async () => {
@@ -125,5 +203,6 @@ module.exports =
 register,
 login,
 getPosts,
-addPost
+addPost,
+verifyOtp
 }
