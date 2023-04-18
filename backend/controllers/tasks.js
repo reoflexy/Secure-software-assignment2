@@ -189,11 +189,11 @@ await client.query(q).then(async(result)=>{
     client.release();
     let data = result[1].rows
     console.log(data);
-    return res.status(200).json(data)
+    return res.status(200).json({data:data, message: 'success'})
 })
 .catch((err) => {
     console.log(err);
-    return res.status(200).json(err)
+    return res.status(200).json({data: err, message: 'error'})
 })
 
 }
