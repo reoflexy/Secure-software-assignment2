@@ -177,7 +177,26 @@ return res.status(500).json({message: 'Verification Failed',error: err});
 
  }
 
+const searchPost = async(req,res) => {
+const {keyword,user} = req.body
 
+const client = await pool.connect();
+const q = `set search_path = public; SELECT * FROM posts WHERE title like = '%${keyword}%' or body like '%${keyword}%'  ;`;
+
+
+//check if otp exists
+await client.query(q).then(async(result)=>{
+    client.release();
+    let data = result[1].rows
+    console.log(data);
+    return res.status(200).json(data)
+})
+.catch((err) => {
+    console.log(err);
+    return res.status(200).json(err)
+})
+
+}
 
 const getPosts = async () => {
 const client = await pool.connect();
@@ -187,10 +206,11 @@ await client.query(q).then((result)=>{
 client.release();
 let data = result[1].rows
 console.log(data);
-res.json(data)
+return res.status(200).json(data)
 })
 .catch((err) => {
 console.log(err);
+return res.status(500).json(err)
 })
 
 
@@ -204,5 +224,6 @@ register,
 login,
 getPosts,
 addPost,
-verifyOtp
+verifyOtp,
+searchPost
 }
