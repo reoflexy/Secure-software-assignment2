@@ -198,9 +198,9 @@ await client.query(q).then(async(result)=>{
 
 }
 
-const getPosts = async () => {
+const getPosts = async (req,res) => {
 const client = await pool.connect();
-const q = `set search_path = hotelbooking,public; SELECT * FROM posts;`;
+const q = `set search_path = public; SELECT * FROM posts;`;
 
 await client.query(q).then((result)=>{
 client.release();
