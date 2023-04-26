@@ -81,8 +81,8 @@ const Posts = () => {
     return(
         <Container fluid>
             <Row>
-            <Col style={{background: 'red'}} lg={6} xs={6} md={4}>
-          xs=6 md=4
+            <Col lg={6} xs={6} md={4}>
+          
             </Col>
             
 
