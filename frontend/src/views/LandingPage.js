@@ -7,6 +7,7 @@ return(
 <div id='background'>
     <NavbarHome />
     <Posts/>
+    <FooterHome/>
 </div>
 </>
 
@@ -77,11 +78,42 @@ const NavbarHome = () => {
     )
 }
 
+const FooterHome = () => {
+  return (
+    <>
+     <Navbar fixed='bottom'>
+      <Container>
+        <Navbar.Brand href="#home">iAugust blog</Navbar.Brand>
+        <Navbar.Toggle />
+        <Navbar.Collapse className="justify-content-end">
+          <Navbar.Text>
+            copyright: <a href="#login">2023</a>
+          </Navbar.Text>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
+    </>
+  )
+}
+
 const Posts = () => {
     return(
         <Container fluid>
             <Row>
-            <Col lg={6} xs={6} md={4}>
+
+            <Col lg={4} sm={6} xs={12} md={6}>
+
+    <Card style={{ width: '100%' }}>
+      <Card.Body>
+        <Card.Title>Post Title</Card.Title>
+        <Card.Subtitle className="mb-2 text-muted">Poster name</Card.Subtitle>
+        <Card.Text>
+          Some quick example text to build on the card title and make up the
+          bulk of the card's content.
+        </Card.Text>
+        <Card.Link href="#">Read more...</Card.Link>
+      </Card.Body>
+    </Card>
           
             </Col>
             

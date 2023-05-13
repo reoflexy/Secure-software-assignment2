@@ -4,7 +4,7 @@ const {pool,config} = require('../db')
 const nodemailer = require('nodemailer')
 
 const register = async (req,res) => {
-    let {username,password} = req.body;
+    let {username, email,password} = req.body;
     //check user detail are present
     if(!username || !password){
     return res.status(500).send('Invalid login credentials');
@@ -18,7 +18,7 @@ const register = async (req,res) => {
     const client = await pool.connect();
     const userId = Math.floor(Math.random(199199-002111)+002111);
 
-    let regQuery = `set search_path = public; insert into users values('${userId}', '${username}','${password}',now() );`
+    let regQuery = `set search_path = public; insert into users values('${userId}', '${username}','${email}','${password}',now() );`
 
     //insert user 
     await client.query(regQuery).then((result)=> {
