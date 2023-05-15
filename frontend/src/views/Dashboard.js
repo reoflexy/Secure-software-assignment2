@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React,{useEffect,useState} from 'react'
 import axios from 'axios'
 import {useNavigate} from 'react-router-dom'
 import {Button, Accordion,Form, Navbar,NavDropdown,Nav,Container,Card, Row,Col} from 'react-bootstrap'
 
-export default function LandingPage() {
+export default function Dashboard() {
   const [posts,setPosts] = useState([]);
   const navigate = useNavigate();
+
   const initialFormData = Object.freeze({
     email: "",
     search: "",
@@ -42,13 +43,6 @@ export default function LandingPage() {
     });
   },[])
 
-  function handleChange(e) {
-    //console.log('working')
-      setFormData({...formData,[e.target.name]: e.target.value})
-      // alert('working')
-      console.log(formData)
-      
-  }
 
   const search = async (e) => {
     e.preventDefault();
@@ -89,12 +83,21 @@ export default function LandingPage() {
     navigate('/postdetails',{state:{post: postObject } })
   }
 
+  function handleChange(e) {
+    //console.log('working')
+      setFormData({...formData,[e.target.name]: e.target.value})
+      // alert('working')
+      console.log(formData)
+      
+  }
+
+
 return(
 <>
 <div id='background'>
 <Navbar bg="light" expand="lg">
       <Container fluid>
-        <Navbar.Brand href="/">iAugust</Navbar.Brand>
+        <Navbar.Brand href="#">iAugust</Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarScroll" />
         <Navbar.Collapse id="navbarScroll">
           <Nav
@@ -102,10 +105,10 @@ return(
             style={{ maxHeight: '100px' }}
             navbarScroll
           >
-            <Nav.Link href="/">Home</Nav.Link>
+             <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link href="#">Contact</Nav.Link>
             <Nav.Link href="/register">Register</Nav.Link>
-            <Nav.Link href="/login">Login</Nav.Link>
+            <Nav.Link href="/logout">Logout</Nav.Link>
             <NavDropdown title="Services" id="navbarScrollingDropdown">
               <NavDropdown.Item href="#action3">1</NavDropdown.Item>
               <NavDropdown.Item href="#action4">
@@ -124,10 +127,10 @@ return(
             <Form.Control
               type="search"
               placeholder="Search"
-              name='search'
-              onChange={handleChange}
               className="me-2"
               aria-label="Search"
+              name='search'
+              onChange={handleChange}
             />
             <Button onClick={search} variant="outline-success">Search</Button>
           </Form>
@@ -150,6 +153,13 @@ return(
             Lifestyle
           </Nav.Link>
         </Nav.Item>
+      </Nav>
+
+      <Nav className="justify-content-left" activeKey="/home">
+        <Nav.Item>
+          <Nav.Link href="/home">{sessionStorage.getItem('user')}</Nav.Link>
+        </Nav.Item>
+       
       </Nav>
     <Container fluid>
             <Row>
@@ -186,13 +196,7 @@ return(
 )
 }
 
-const NavbarHome = () => {
-    return(
-        <>
-      
-    </>
-    )
-}
+
 
 const FooterHome = () => {
   return (

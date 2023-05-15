@@ -1,16 +1,16 @@
 import React,{useState, useEffect} from 'react';
-import {useNavigate} from 'react-router-dom'
+import {useNavigate,useLocation} from 'react-router-dom'
 import {Button, Accordion,Form, FormControl, FormGroup, Navbar,NavDropdown,Nav,Container,Card, Row,Col} from 'react-bootstrap'
 import axios from 'axios'
 
-export default function Register() {
+export default function OTP() {
   const navigate = useNavigate();
+  const {state} = useLocation();
+  const {username,password} = state;
+  console.log(state)
 
   const initialFormData = Object.freeze({
-    email: "",
-    username: "",
-    password: "",
-    password2: ""
+    otp: "",
   });
 
   const [formData, setFormData] = useState(initialFormData);
@@ -31,26 +31,13 @@ export default function Register() {
   const HandleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (formData.username == "" || formData.username == null ) {
+    if (formData.otp == "" || formData.otp == null ) {
       window.scrollTo(0,0)
-    return setError('Enter Valid username!');
-    }
-  
-    if(formData.email == "" || (!regexEmail.test(formData.email))){
-      window.scrollTo(0,0)
-      return setError('Enter Valid Email!');
+    return setError('Enter Valid otp!');
     }
 
-    if(formData.password.length < 8){
-      window.scrollTo(0,0)
-      return setError('Password must be 8 chracters minimum!');
-    }
-  
-    if(formData.password != formData.password2){
-      window.scrollTo(0,0)
-      return setError('Password Mismatch!');
-    }
-
+    
+    //clean against sql injection
     
 
     const headers = {
@@ -59,21 +46,23 @@ export default function Register() {
       'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
     }
 
-    axios.post('http://localhost:5000/api/blogsite/register', {
-      username: formData.username,
-      email: formData.email ,
-      password:  formData.password,
+    axios.post('http://localhost:5000/api/blogsite/verifyOtp', {
+      username: username,
+      password:  password,
+      otp:  formData.otp,
     },{headers})
     .then((response) => {
-      console.log(response);
+      //console.log(response.data);
       //navigate to dashboard
       if(response.data.message == 'success'){
-        setFormData(initialFormData)
         sessionStorage.setItem('token',response.data.token)
-        sessionStorage.setItem('user',formData.username)
-        navigate('/dashboard',{replace: true})
+        sessionStorage.setItem('user',username)
+        navigate('/dashboard')
       }
-      
+      else{
+        setError(response.data.message)
+      }
+     
     }, (error) => {
       console.log(error);
      // return setError(error);
@@ -96,10 +85,10 @@ export default function Register() {
             style={{ maxHeight: '100px' }}
             navbarScroll
           >
-            <Nav.Link href="#action1">Home</Nav.Link>
-            <Nav.Link href="#action2">Contact</Nav.Link>
-            <Nav.Link href="#action3">Register</Nav.Link>
-            <Nav.Link href="#action4">Login</Nav.Link>
+             <Nav.Link href="/">Home</Nav.Link>
+            <Nav.Link href="#">Contact</Nav.Link>
+            <Nav.Link href="/register">Register</Nav.Link>
+            <Nav.Link href="/login">Login</Nav.Link>
             <NavDropdown title="Services" id="navbarScrollingDropdown">
               <NavDropdown.Item href="#action3">1</NavDropdown.Item>
               <NavDropdown.Item href="#action4">
@@ -165,28 +154,11 @@ return(
     <Container style={{ display: 'flex', justifyContent: 'center'}} fluid>
           
              <Form style={{width: '50%'}}>
-              <h3 className='mt-3' style={{textAlign: 'center'}}>Register</h3>
+              <h3 className='mt-3' style={{textAlign: 'center'}}>Verify Identity</h3>
               <h6 className='mt-3' style={{textAlign: 'center', color:'red'}}>{error}</h6>
               <Form.Group className="mb-3" controlId="formBasicText" >
-        <Form.Label>Username</Form.Label>
-        <Form.Control type="text" placeholder="Enter username"  name='username' onChange={handleChange} />
-      </Form.Group>
-      <Form.Group className="mb-3" controlId="formBasicEmail">
-        <Form.Label>Email address</Form.Label>
-        <Form.Control type="email" placeholder="Enter email"  name='email' onChange={handleChange} />
-        <Form.Text className="text-muted">
-          We'll never share your email with anyone else.
-        </Form.Text>
-      </Form.Group>
-
-      <Form.Group className="mb-3" controlId="formBasicPassword">
-        <Form.Label>Password</Form.Label>
-        <Form.Control type="password" placeholder="Password"  name='password' onChange={handleChange} />
-      </Form.Group>
-
-      <Form.Group className="mb-3" controlId="formBasicPassword">
-        <Form.Label>Confirm Password</Form.Label>
-        <Form.Control type="password" placeholder="Password"  name='password2' onChange={handleChange}/>
+        <Form.Label>OTP</Form.Label>
+        <Form.Control type="text" placeholder="Enter OTP sent to your email"  name='otp' onChange={handleChange} />
       </Form.Group>
       
       <Button variant="primary" type="submit" disabled={disabled} onClick={HandleSubmit}>

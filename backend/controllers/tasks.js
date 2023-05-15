@@ -6,8 +6,8 @@ const nodemailer = require('nodemailer')
 const register = async (req,res) => {
     let {username, email,password} = req.body;
     //check user detail are present
-    if(!username || !password){
-    return res.status(500).send('Invalid login credentials');
+    if(!username || !password || !email){
+    return res.status(500).send('Invalid signup credentials');
     }
 
     //CREATE salt for password
@@ -16,17 +16,18 @@ const register = async (req,res) => {
 
     //define connection client from pool
     const client = await pool.connect();
-    const userId = Math.floor(Math.random(199199-002111)+002111);
+    const userId = Math.floor(Math.random() * (199199-002111));
 
     let regQuery = `set search_path = public; insert into users values('${userId}', '${username}','${email}','${password}',now() );`
 
     //insert user 
     await client.query(regQuery).then((result)=> {
     //create token
-    const token = jwt.sign({username: username,userId: userId},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
-    return res.status(200).send({token: token,message: 'Registration successful',DBResult: result });
+    const token = jwt.sign({user: username},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
+    return res.status(200).send({token: token,message: 'success',DBResult: result });
     })
     .catch((err)=> {
+        console.log(err)
         return res.status(500).send(err);
     })
 
@@ -63,8 +64,8 @@ if (!isMatch){
 }
 
 //create otp data
-const otpnum = Math.floor(Math.random(9991-1911)+1911);
-const otpId = Math.floor(Math.random(99991-11911)+11911);
+const otpnum = Math.floor(Math.random() * (9991-1911)+1911);
+const otpId = Math.floor(Math.random() * (99991-11911)+11911);
 
 //save otp to db
 const q2 = `set search_path = public; INSERT INTO otp VALUES ('${otpId}','${data.username}','${otpnum}',now() ) ;`;
@@ -81,7 +82,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'richmondeyesan04@gmail.com',
-        pass: 'qw12aszx17091996'
+        pass: 'yqaabsxcykfxwuby'
     }
     });
 
@@ -100,7 +101,7 @@ await transporter.sendMail(mailOptions, function(error,info){
     }
     else{
         console.log('Email sent')
-        return res.status(200).json({message: 'success' });
+        return res.status(200).json({message: 'success, OTP sent' });
     }
 })
 
@@ -119,20 +120,20 @@ const addPost = async (req,res) => {
     const {message,username} = req.body
 
     //validate inputs
-    if(!message || username){
+    if(!message || !username){
         console.log('Invalid input')
         return res.status(400).json({message: 'Invalid input'})
     }
     //create connection client
     const client = await pool.connect();
     //generate Id for post
-    const postId = Math.floor(Math.random(3199199-0102111)+0102111);
+    const postId = Math.floor(Math.random() * (31991-01021)+01021);
     //create query string
-    const q = `set search_path = hotelbooking,public; insert into posts values('${postId},'${username}','${message}',now()) ;`
+    const q = `set search_path = public; insert into posts values('${postId}','${username}','${message}',now());`
     //perform asynchronous database insertation
     await client.query(q).then((result)=> {
     console.log('Post successful')
-    return res.status(200).json({response: result, message: 'Post successful'});
+    return res.status(200).json({response: result, message: 'success'});
     }).catch((err)=>{
         console.log('Post failed to upload',err)
         return res.status(500).json({message: 'Post failed'})
@@ -140,12 +141,37 @@ const addPost = async (req,res) => {
     
  }
 
+ const addComment = async (req,res) => {
+    const {message,username,postId} = req.body
+
+    //validate inputs
+    if(!message || !username || !postId){
+        console.log('Invalid input')
+        return res.status(400).json({message: 'Invalid input'})
+    }
+    //create connection client
+    const client = await pool.connect();
+    //generate Id for post
+    const commentId = Math.floor(Math.random() * (31991-01021)+01021);
+    //create query string
+    const q = `set search_path = public; insert into comments values('${commentId}','${username}','${postId}','${message}',now());`
+    //perform asynchronous database insertation
+    await client.query(q).then((result)=> {
+    console.log('Comment successful')
+    return res.status(200).json({response: result, message: 'success'});
+    }).catch((err)=>{
+        console.log('Comment failed to upload',err)
+        return res.status(500).json({message: 'Comment failed'})
+    })
+    
+ }
+
 const verifyOtp = async (req,res) => {
-const {otp,user} = req.body
+const {otp,username} = req.body
 
 const client = await pool.connect();
-const q = `set search_path = public; SELECT * FROM otp WHERE username = '${user.username}'  ;`;
-
+const q = `set search_path = public; SELECT * FROM otp WHERE username = '${username}' ;`;
+const q2 = `set search_path = public; DELETE FROM otp WHERE username = '${username}'  ;`;
 
 //check if otp exists
 await client.query(q).then(async(result)=>{
@@ -154,15 +180,24 @@ let data = result[1].rows
 console.log(data)
 //check if rows are empty
 if (data.length < 1){
-    console.log('Invalid otp')
-    return res.status(500).send('Invalid OTP')
+    console.log('Doesnt exit')
+    return res.status(500).send('OTP not found')
 }
 data = data[0]
-
+console.log(data)
 //compare otp values
 if(otp == data.otp){
+//delete otp from db
+await client.query(q2).then((result) => {
+console.log('otp deleted')
+})
+.catch((err) => {
+    console.log('cannot delete otp')
+    return res.status(500).json({message: 'Cannot delete otp',error: err });
+})
 //create token and send response
-const token = jwt.sign({user: user},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
+const token = jwt.sign({user: username},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
+
 return res.status(200).json({token: token,message: 'success' });
 }
 else {
@@ -178,10 +213,10 @@ return res.status(500).json({message: 'Verification Failed',error: err});
  }
 
 const searchPost = async(req,res) => {
-const {keyword,user} = req.body
+let params = req.query.search
 
 const client = await pool.connect();
-const q = `set search_path = public; SELECT * FROM posts WHERE title like = '%${keyword}%' or body like '%${keyword}%'  ;`;
+const q = `set search_path = public; SELECT * FROM posts WHERE body like '%${params}%'  ;`;
 
 
 //check if otp exists
@@ -205,7 +240,7 @@ const q = `set search_path = public; SELECT * FROM posts;`;
 await client.query(q).then((result)=>{
 client.release();
 let data = result[1].rows
-console.log(data);
+//console.log(data);
 return res.status(200).json(data)
 })
 .catch((err) => {
@@ -216,6 +251,26 @@ return res.status(500).json(err)
 
 }
 
+const getComments = async (req,res) => {
+    let param = req.query.postId;
+    console.log(param);
+    const client = await pool.connect();
+    const q = `set search_path = public; SELECT * FROM comments WHERE postid = '${param}' ;`;
+    
+    await client.query(q).then((result)=>{
+    client.release();
+    let data = result[1].rows
+    //console.log(data);
+    return res.status(200).json({data: data})
+    })
+    .catch((err) => {
+    console.log(err);
+    return res.status(500).json(err)
+    })
+    
+    
+    }
+
 
 
 module.exports = 
@@ -225,5 +280,7 @@ login,
 getPosts,
 addPost,
 verifyOtp,
-searchPost
+searchPost,
+addComment,
+getComments
 }

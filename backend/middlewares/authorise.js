@@ -12,7 +12,7 @@ const authorise = async(req,res,next) => {
 
     try {
         const payload = jwt.verify(token, process.env.JWT_SECRET)
-        req.user = {userId: payload.userId,username: payload.username}
+        req.username = {username: payload.user}
         next()
     } catch (error) {
         console.log('Unauthorized request')
