@@ -91,6 +91,12 @@ export default function Dashboard() {
       
   }
 
+  const logout = () => {
+sessionStorage.removeItem('token')
+sessionStorage.removeItem('user')
+navigate('/',{replace: true})
+  }
+
 
 return(
 <>
@@ -108,7 +114,7 @@ return(
              <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link href="#">Contact</Nav.Link>
             <Nav.Link href="/register">Register</Nav.Link>
-            <Nav.Link href="/logout">Logout</Nav.Link>
+            <Nav.Link onClick={logout}>Logout</Nav.Link>
             <NavDropdown title="Services" id="navbarScrollingDropdown">
               <NavDropdown.Item href="#action3">1</NavDropdown.Item>
               <NavDropdown.Item href="#action4">
@@ -140,7 +146,7 @@ return(
 
     <Nav className="justify-content-center" activeKey="/home">
         <Nav.Item>
-          <Nav.Link href="/home">News</Nav.Link>
+          <Nav.Link href="/post">Add post</Nav.Link>
         </Nav.Item>
         <Nav.Item>
           <Nav.Link eventKey="link-1">Events</Nav.Link>

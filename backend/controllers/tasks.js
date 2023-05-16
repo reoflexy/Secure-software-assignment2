@@ -5,10 +5,29 @@ const nodemailer = require('nodemailer')
 
 const register = async (req,res) => {
     let {username, email,password} = req.body;
+    const onlyLettersPattern = /^[A-Za-z]+$/;
+    let regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    let passExpression = /^([a-z]|[A-Z]|[0-9]){4,8}$/;
+
     //check user detail are present
     if(!username || !password || !email){
     return res.status(500).send('Invalid signup credentials');
     }
+
+    if(!username.match(onlyLettersPattern)){
+        return res.status(400).json({ message: "username cannot have special characters or numbers!"})
+      }
+
+      if(!email.match(regexEmail)){
+        return res.status(400).json({ err: "Invalid email input"})
+      }
+
+      if(!password.match(passExpression)){
+        return res.status(400).json({ err: "Password must be 8 characters with only letters and numbers"})
+      }
+
+
+
 
     //CREATE salt for password
     const salt = await bcrypt.genSalt(10);
@@ -19,9 +38,10 @@ const register = async (req,res) => {
     const userId = Math.floor(Math.random() * (199199-002111));
 
     let regQuery = `set search_path = public; insert into users values('${userId}', '${username}','${email}','${password}',now() );`
-
+   
     //insert user 
-    await client.query(regQuery).then((result)=> {
+    //await client.query(regQuery, [userId], [username],[email],[password],()=>{}).then((result)=> {
+        await client.query(regQuery).then((result)=> {
     //create token
     const token = jwt.sign({user: username},process.env.JWT_SECRET,{expiresIn: process.env.JWT_EXP});
     return res.status(200).send({token: token,message: 'success',DBResult: result });
@@ -36,10 +56,22 @@ const register = async (req,res) => {
 
 const login = async (req,res) => {
 const {username,password} = req.body
+    const onlyLettersPattern = /^[A-Za-z]+$/;
+    let regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    let passExpression = /^([a-z]|[A-Z]|[0-9]){4,8}$/;
 
 if(!username || !password){
     return res.status(500).send('Invalid login credentials')
 }
+
+if(!username.match(onlyLettersPattern)){
+    return res.status(400).json({ message: "username cannot have special characters or numbers!"})
+  }
+
+
+  if(!password.match(passExpression)){
+    return res.status(400).json({ err: "Password must be 8 characters with only letters and numbers"})
+  }
 
 //fetch credentials from database
 const client = await pool.connect();
@@ -117,13 +149,25 @@ return res.status(500).json(err)
 }
 
 const addPost = async (req,res) => {
-    const {message,username} = req.body
+    let {message,username} = req.body
+    let postExpression = /^([,. ][a-z]|[A-Z]|[0-9]){1,80000}$/;
+    const onlyLettersPattern = /^[A-Za-z]+$/;
+    let regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+   
 
     //validate inputs
     if(!message || !username){
         console.log('Invalid input')
         return res.status(400).json({message: 'Invalid input'})
     }
+
+    if(!username.match(onlyLettersPattern)){
+        return res.status(400).json({ err: "Invalid username"})
+      }
+
+      message = typeof(message) === 'string' && message.trim().length > 0 ? message.trim() : '';
+
+
     //create connection client
     const client = await pool.connect();
     //generate Id for post
@@ -142,13 +186,27 @@ const addPost = async (req,res) => {
  }
 
  const addComment = async (req,res) => {
-    const {message,username,postId} = req.body
+    let {message,username,postId} = req.body
+    const onlyLettersPattern = /^[A-Za-z]+$/;
+    let regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    let passExpression = /^([a-z]|[A-Z]|[0-9]){4,8}$/;
 
     //validate inputs
     if(!message || !username || !postId){
         console.log('Invalid input')
         return res.status(400).json({message: 'Invalid input'})
     }
+
+    if(!username.match(onlyLettersPattern)){
+        return res.status(400).json({ err: "Invalid username"})
+      }
+
+      postId = typeof(postId) === 'number' && postId % 1 === 0 ? postId : 0;
+
+      message = typeof(message) === 'string' && message.trim().length > 0 ? message.trim() : '';
+
+
+
     //create connection client
     const client = await pool.connect();
     //generate Id for post
@@ -167,7 +225,20 @@ const addPost = async (req,res) => {
  }
 
 const verifyOtp = async (req,res) => {
-const {otp,username} = req.body
+let {otp,username} = req.body
+const onlyLettersPattern = /^[A-Za-z]+$/;
+const onlyNumbersPattern = /^[0-9]+$/;
+
+if(!username.match(onlyLettersPattern)){
+    return res.status(400).json({ err: "Invalid username"})
+  }
+
+  
+
+//otp = typeof(otp) === 'number' && otp % 1 === 0 ? otp : 0;
+
+otp = typeof(otp) === 'string' && otp.trim().length > 0 ? otp.trim() : '';
+
 
 const client = await pool.connect();
 const q = `set search_path = public; SELECT * FROM otp WHERE username = '${username}' ;`;
@@ -218,6 +289,7 @@ let params = req.query.search
 const client = await pool.connect();
 const q = `set search_path = public; SELECT * FROM posts WHERE body like '%${params}%'  ;`;
 
+params = typeof(params) === 'string' && params.trim().length > 0 ? params.trim() : '';
 
 //check if otp exists
 await client.query(q).then(async(result)=>{
@@ -253,6 +325,8 @@ return res.status(500).json(err)
 
 const getComments = async (req,res) => {
     let param = req.query.postId;
+    param = typeof(param) === 'string' && param.trim().length > 0 ? param.trim() : '';
+
     console.log(param);
     const client = await pool.connect();
     const q = `set search_path = public; SELECT * FROM comments WHERE postid = '${param}' ;`;
@@ -270,6 +344,7 @@ const getComments = async (req,res) => {
     
     
     }
+
 
 
 

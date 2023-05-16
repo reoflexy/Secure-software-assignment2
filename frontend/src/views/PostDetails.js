@@ -8,6 +8,21 @@ export default function PostDetails() {
   const postObject = state
   console.log(postObject)
 
+  const [csrfToken,setcsrfToken] = useState('')
+
+  const getCsrfToken = async () => {
+    const { data } = await axios.get("http://localhost:5000/api/csrf-token");
+    // log data received
+    console.log("CSRF", data);
+    // set default header with axios
+    axios.defaults.headers["X-CSRF-TOKEN"] = data.csrfToken;
+    setcsrfToken(data.csrfToken)
+  };
+
+  useEffect(() => {
+    getCsrfToken();
+  }, []);
+
   const initialFormData = Object.freeze({
     email: "",
     comment: "",
@@ -27,6 +42,7 @@ export default function PostDetails() {
     console.log(postObject.post.id)
 
     const headers = {
+      "X-CSRF-TOKEN": csrfToken,
       'Access-Control-Allow-Origin' : '*',
       'Access-Control-Allow-Credentials':true,
       'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
@@ -59,6 +75,11 @@ export default function PostDetails() {
       console.log(formData)
       
   }
+  const logout = () => {
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('user')
+    navigate('/',{replace: true})
+      }
 
   const HandleSubmit = async (e) => {
     e.preventDefault();
@@ -124,7 +145,7 @@ export default function PostDetails() {
             <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link href="#">Contact</Nav.Link>
             <Nav.Link href="/register">Register</Nav.Link>
-            <Nav.Link href="/login">Login</Nav.Link>
+            <Nav.Link onClick={logout}>Logout</Nav.Link>
             <NavDropdown title="Services" id="navbarScrollingDropdown">
               <NavDropdown.Item href="#action3">1</NavDropdown.Item>
               <NavDropdown.Item href="#action4">

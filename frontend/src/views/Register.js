@@ -6,6 +6,18 @@ import axios from 'axios'
 export default function Register() {
   const navigate = useNavigate();
 
+  const getCsrfToken = async () => {
+    const { data } = await axios.get("http://localhost:5000/api/csrf-token");
+    // log data received
+    console.log("CSRF", data);
+    // set default header with axios
+    axios.defaults.headers["X-CSRF-TOKEN"] = data.csrfToken;
+  };
+
+  useEffect(() => {
+    getCsrfToken();
+  }, []);
+
   const initialFormData = Object.freeze({
     email: "",
     username: "",
@@ -72,6 +84,9 @@ export default function Register() {
         sessionStorage.setItem('token',response.data.token)
         sessionStorage.setItem('user',formData.username)
         navigate('/dashboard',{replace: true})
+      }
+      else{
+        setError(response.response.data.message)
       }
       
     }, (error) => {

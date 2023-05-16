@@ -9,6 +9,21 @@ export default function OTP() {
   const {username,password} = state;
   console.log(state)
 
+  const [csrfToken,setcsrfToken] = useState('')
+
+  const getCsrfToken = async () => {
+    const { data } = await axios.get("http://localhost:5000/api/csrf-token");
+    // log data received
+    console.log("CSRF", data);
+    // set default header with axios
+    axios.defaults.headers["X-CSRF-TOKEN"] = data.csrfToken;
+    setcsrfToken(data.csrfToken)
+  };
+
+  useEffect(() => {
+    getCsrfToken();
+  }, []);
+
   const initialFormData = Object.freeze({
     otp: "",
   });
@@ -41,6 +56,7 @@ export default function OTP() {
     
 
     const headers = {
+      "X-CSRF-TOKEN": csrfToken,
       'Access-Control-Allow-Origin' : '*',
       'Access-Control-Allow-Credentials':true,
       'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',

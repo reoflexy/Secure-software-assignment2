@@ -13,6 +13,18 @@ export default function Login() {
     password2: ""
   });
 
+  const getCsrfToken = async () => {
+    const { data } = await axios.get("http://localhost:5000/api/csrf-token");
+    // log data received
+    console.log("CSRF", data);
+    // set default header with axios
+    axios.defaults.headers["X-CSRF-TOKEN"] = data.csrfToken;
+  };
+
+  useEffect(() => {
+    getCsrfToken();
+  }, []);
+
   const [formData, setFormData] = useState(initialFormData);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

@@ -13,6 +13,27 @@ export default function Post() {
     password2: ""
   });
 
+  const [csrfToken,setcsrfToken] = useState('')
+
+  const getCsrfToken = async () => {
+    const { data } = await axios.get("http://localhost:5000/api/csrf-token");
+    // log data received
+    console.log("CSRF", data);
+    // set default header with axios
+    axios.defaults.headers["X-CSRF-TOKEN"] = data.csrfToken;
+    setcsrfToken(data.csrfToken)
+  };
+
+  useEffect(() => {
+    getCsrfToken();
+  }, []);
+
+  const logout = () => {
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('user')
+    navigate('/',{replace: true})
+      }
+
   const [formData, setFormData] = useState(initialFormData);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -27,6 +48,12 @@ export default function Post() {
       console.log(formData)
       
   }
+
+  const logout = () => {
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('user')
+    navigate('/',{replace: true})
+      }
 
   const HandleSubmit = async (e) => {
     e.preventDefault();
@@ -46,6 +73,7 @@ export default function Post() {
     
 
     const headers = {
+      "X-CSRF-TOKEN": csrfToken,
       'authorization' : `Bearer ${sessionStorage.getItem('token')} `,
       'Access-Control-Allow-Origin' : '*',
       'Access-Control-Allow-Credentials':true,
@@ -89,7 +117,7 @@ export default function Post() {
           >
             <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link href="#">Contact</Nav.Link>
-            <Nav.Link href="/logout">Logout</Nav.Link>
+            <Nav.Link onClick={logout}>Logout</Nav.Link>
             <NavDropdown title="Services" id="navbarScrollingDropdown">
               <NavDropdown.Item href="#action3">1</NavDropdown.Item>
               <NavDropdown.Item href="#action4">
