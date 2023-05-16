@@ -49,11 +49,7 @@ export default function Post() {
       
   }
 
-  const logout = () => {
-    sessionStorage.removeItem('token')
-    sessionStorage.removeItem('user')
-    navigate('/',{replace: true})
-      }
+  
 
   const HandleSubmit = async (e) => {
     e.preventDefault();
