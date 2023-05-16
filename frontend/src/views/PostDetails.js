@@ -1,10 +1,11 @@
 import React,{useState, useEffect} from 'react';
-import {useLocation} from 'react-router-dom'
+import {useLocation,useNavigate} from 'react-router-dom'
 import {Button, Accordion,Form, FormControl, FormGroup, Navbar,NavDropdown,Nav,Container,Card, Row,Col} from 'react-bootstrap'
 import axios from 'axios'
 
 export default function PostDetails() {
   const {state} = useLocation();
+  const navigate = useNavigate();
   const postObject = state
   console.log(postObject)
 
