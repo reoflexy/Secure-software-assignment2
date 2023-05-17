@@ -7,7 +7,7 @@ const register = async (req,res) => {
     let {username, email,password} = req.body;
     const onlyLettersPattern = /^[A-Za-z]+$/;
     let regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    let passExpression = /^([a-z]|[A-Z]|[0-9]){4,8}$/;
+    let passExpression = /^([a-z]|[A-Z]|[0-9]){4,12}$/;
 
     //check user detail are present
     if(!username || !password || !email){
@@ -19,11 +19,11 @@ const register = async (req,res) => {
       }
 
       if(!email.match(regexEmail)){
-        return res.status(400).json({ err: "Invalid email input"})
+        return res.status(400).json({ message: "Invalid email input"})
       }
 
       if(!password.match(passExpression)){
-        return res.status(400).json({ err: "Password must be 8 characters with only letters and numbers"})
+        return res.status(400).json({ message: "Password must be 8 characters with only letters and numbers"})
       }
 
 
@@ -47,7 +47,7 @@ const register = async (req,res) => {
     return res.status(200).send({token: token,message: 'success',DBResult: result });
     })
     .catch((err)=> {
-        console.log(err)
+        //console.log(err)
         return res.status(500).send(err);
     })
 
@@ -150,8 +150,8 @@ return res.status(500).json(err)
 
 const addPost = async (req,res) => {
     let {message,username} = req.body
-    let postExpression = /^([,. ][a-z]|[A-Z]|[0-9]){1,80000}$/;
-    const onlyLettersPattern = /^[A-Za-z]+$/;
+    //let postExpression = /^([,.][a-z]|[A-Z]|[0-9]){1,80000}$/;
+    const onlyLettersPattern = /^[ A-Za-z]+$/;
     let regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
    
 
@@ -163,6 +163,10 @@ const addPost = async (req,res) => {
 
     if(!username.match(onlyLettersPattern)){
         return res.status(400).json({ err: "Invalid username"})
+      }
+
+      if(!message.match(onlyLettersPattern)){
+        return res.status(400).json({ err: "Invalid Content"})
       }
 
       message = typeof(message) === 'string' && message.trim().length > 0 ? message.trim() : '';
@@ -188,6 +192,7 @@ const addPost = async (req,res) => {
  const addComment = async (req,res) => {
     let {message,username,postId} = req.body
     const onlyLettersPattern = /^[A-Za-z]+$/;
+    const onlyLettersPattern2 = /^[ A-Za-z]+$/;
     let regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     let passExpression = /^([a-z]|[A-Z]|[0-9]){4,8}$/;
 
@@ -198,6 +203,10 @@ const addPost = async (req,res) => {
     }
 
     if(!username.match(onlyLettersPattern)){
+        return res.status(400).json({ err: "Invalid comment"})
+      }
+
+      if(!message.match(onlyLettersPattern2)){
         return res.status(400).json({ err: "Invalid username"})
       }
 
@@ -284,7 +293,15 @@ return res.status(500).json({message: 'Verification Failed',error: err});
  }
 
 const searchPost = async(req,res) => {
+    const onlyLettersPattern = /^[ A-Za-z]+$/;
 let params = req.query.search
+
+if(!params.match(onlyLettersPattern)){
+    return res.status(400).json({ err: "Invalid Content"})
+  }
+
+  params = typeof(params) === 'string' && params.trim().length > 0 ? params.trim() : '';
+
 
 const client = await pool.connect();
 const q = `set search_path = public; SELECT * FROM posts WHERE body like '%${params}%'  ;`;
@@ -343,7 +360,7 @@ const getComments = async (req,res) => {
     })
     
     
-    }
+}
 
 
 

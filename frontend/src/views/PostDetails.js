@@ -21,7 +21,7 @@ export default function PostDetails() {
   };
 
   useEffect(() => {
-    getCsrfToken();
+    
   }, []);
 
   const initialFormData = Object.freeze({
@@ -40,7 +40,11 @@ export default function PostDetails() {
   let regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
   useEffect(() => {
-    console.log(postObject.post.id)
+    if(sessionStorage.getItem('user') == "" || sessionStorage.getItem('user') == null){
+      navigate('/',{replace: true})
+    }
+    //console.log(postObject.post.id)
+    getCsrfToken();
 
     const headers = {
       "X-CSRF-TOKEN": csrfToken,
@@ -57,7 +61,7 @@ export default function PostDetails() {
      },
     {headers})
     .then((response) => {
-      console.log(response.data.data);
+      //console.log(response.data.data);
       setComments(response.data.data)
       //navigate to dashboard
       
@@ -108,7 +112,7 @@ export default function PostDetails() {
       postId: postObject.post.id,
     },{headers})
     .then((response) => {
-      console.log(response.data);
+      //console.log(response.data);
       
       if(response.data.message == 'success'){
         setFormData(initialFormData)

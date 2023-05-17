@@ -25,6 +25,9 @@ export default function Post() {
   };
 
   useEffect(() => {
+    if(sessionStorage.getItem('user') == "" || sessionStorage.getItem('user') == null){
+      navigate('/',{replace: true})
+    }
     getCsrfToken();
   }, []);
 

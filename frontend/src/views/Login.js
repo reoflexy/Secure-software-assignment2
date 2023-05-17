@@ -12,6 +12,7 @@ export default function Login() {
     password: "",
     password2: ""
   });
+  const [csrfToken,setcsrfToken] = useState('')
 
   const getCsrfToken = async () => {
     const { data } = await axios.get("http://localhost:5000/api/csrf-token");
@@ -19,6 +20,7 @@ export default function Login() {
     console.log("CSRF", data);
     // set default header with axios
     axios.defaults.headers["X-CSRF-TOKEN"] = data.csrfToken;
+    setcsrfToken(data.csrfToken)
   };
 
   useEffect(() => {
@@ -56,6 +58,7 @@ export default function Login() {
     
 
     const headers = {
+      'X-CSRF-TOKEN': csrfToken,
       'Access-Control-Allow-Origin' : '*',
       'Access-Control-Allow-Credentials':true,
       'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
@@ -66,13 +69,13 @@ export default function Login() {
       password:  formData.password,
     },{headers})
     .then((response) => {
-      console.log(response);
+      //console.log(response);
       //navigate to dashboard
       
       navigate('/otp',{state:{username: formData.username, password: formData.password} })
     }, (error) => {
-      console.log(error);
-     // return setError(error);
+      //console.log(error);
+      return setError('Invlid login credentials');
     });
 
 
